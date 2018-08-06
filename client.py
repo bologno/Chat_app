@@ -1,7 +1,11 @@
 import sys,time
 from PyQt5 import QtGui
 from PyQt5 import QtCore
-from PyQt5.QtWidgets import QScrollBar,QSplitter,QTableWidgetItem,QTableWidget,QComboBox,QVBoxLayout,QGridLayout,QDialog,QWidget, QPushButton, QApplication, QMainWindow,QAction,QMessageBox,QLabel,QTextEdit,QProgressBar,QLineEdit
+from PyQt5.QtWidgets import (
+    QSplitter, QComboBox, QVBoxLayout, QDialog, QWidget, QPushButton,
+    QApplication, QMainWindow,QAction,QMessageBox,QLabel,QTextEdit, QLineEdit,
+    QHBoxLayout,
+)
 from PyQt5.QtCore import QCoreApplication
 from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
@@ -34,6 +38,12 @@ class Window(QDialog):
         self.btnSend.setStyleSheet("{background-color: #000080, color: silver;}")
         self.btnSend.clicked.connect(self.send)
 
+        self.cb = QComboBox()
+        self.cb.addItem("C")
+        self.cb.addItem("C++")
+        self.cb.addItems(["Java", "C#", "Python"])
+        self.cb.currentIndexChanged.connect(self.combo_population)
+
         self.btnConn=QPushButton("Connect",self)
         self.btnConn.resize(350,30)
         self.btnConnFont=self.btnConn.font()
@@ -57,10 +67,12 @@ class Window(QDialog):
         splitter.setSizes([400,100])
 
         splitter2=QSplitter(QtCore.Qt.Horizontal)
+        splitter2.addWidget(self.cb)
         splitter2.addWidget(self.btnSend)
         splitter2.addWidget(self.btnConn)
         splitter2.addWidget(self.label)
-        splitter2.setSizes([45, 45, 10])
+        splitter2.setSizes([30, 30, 30, 10])
+
 
         splitter3=QSplitter(QtCore.Qt.Vertical)
         splitter3.addWidget(splitter)
@@ -72,6 +84,10 @@ class Window(QDialog):
 
         self.setWindowTitle("Slac chat")
         self.resize(500, 500)
+
+    def combo_population(self, index):
+        print(index)
+
 
     def send(self):
         text=self.chatTextField.text()
