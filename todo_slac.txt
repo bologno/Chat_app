@@ -1,0 +1,31 @@
+SLAC TO DO LIST
+
+##Python code
+
+--DONE -center window --DONE
+-Server list of connected hosts
+	-display online list to clients, refresh everytime a message is sent in any direction.
+
+
+-require user name on an input field.
+-fix chat text field size inside window frame.
+-server connection to client
+	-server welcome message
+-client disconnetion:
+	-disconnect client from server
+	-Emit bradcast server after user login or logout.
+	DONE--goodbye message --DONE
+-tab systems of different ongoing chats
+
+
+##Github.
+
+-fork desktop to github
+-stage, modify and commit from desktop	
+
+##Docmunetation.
+-Write system user tutorial.
+
+##Instalation
+-Make de python code installable-
+-Write instalation tutorial manual.
