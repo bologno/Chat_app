@@ -3,18 +3,25 @@ from PyQt5 import QtGui
 from PyQt5 import QtCore
 from PyQt5.QtWidgets import QScrollBar,QSplitter,QTableWidgetItem,QTableWidget,QComboBox,QVBoxLayout,QGridLayout,QDialog,QWidget, QPushButton, QApplication, QMainWindow,QAction,QMessageBox,QLabel,QTextEdit,QProgressBar,QLineEdit
 from PyQt5.QtCore import QCoreApplication
+from PyQt5.QtGui import *
+from PyQt5.QtWidgets import *
+from PyQt5.QtCore import *
 from socket import AF_INET, socket, SOCK_STREAM
 import argparse
 from threading import Thread
 from socketserver import ThreadingMixIn
 
-
+status='status'
 tcpClientA=None
 
 class Window(QDialog):
     def __init__(self):
         super().__init__()
         self.flag=0
+        self.label = QLabel(status, self)
+        self.label.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+        self.label.setAlignment(Qt.AlignCenter)
+        self.label.setStyleSheet("QLabel {color: blue;}")
         self.chatTextField=QLineEdit(self)
         self.chatTextField.resize(350,100)
         self.chatTextField.move(10,350)
@@ -52,7 +59,8 @@ class Window(QDialog):
         splitter2=QSplitter(QtCore.Qt.Horizontal)
         splitter2.addWidget(self.btnSend)
         splitter2.addWidget(self.btnConn)
-        splitter2.setSizes([50, 50])
+        splitter2.addWidget(self.label)
+        splitter2.setSizes([45, 45, 10])
 
         splitter3=QSplitter(QtCore.Qt.Vertical)
         splitter3.addWidget(splitter)
