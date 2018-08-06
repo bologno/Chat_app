@@ -9,8 +9,8 @@ SLAC TO DO LIST
 
 -require user name on an input field.
 -fix chat text field size inside window frame.
--server connection to client
-	-server welcome message
+DONE--server connection to client--DONE
+	DONE--server welcome message--DONE
 -client disconnetion:
 	-disconnect client from server
 	-Emit bradcast server after user login or logout.

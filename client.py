@@ -16,16 +16,25 @@ class Window(QDialog):
         super().__init__()
         self.flag=0
         self.chatTextField=QLineEdit(self)
-        self.chatTextField.resize(480,100)
+        self.chatTextField.resize(350,100)
         self.chatTextField.move(10,350)
         self.btnSend=QPushButton("Send",self)
-        self.btnSend.resize(480,30)
+        self.btnSend.resize(350,30)
         self.btnSendFont=self.btnSend.font()
         self.btnSendFont.setPointSize(12)
         self.btnSend.setFont(self.btnSendFont)
-        self.btnSend.move(10,460)
+        self.btnSend.move(10,360)
         self.btnSend.setStyleSheet("{background-color: #000080, color: silver;}")
         self.btnSend.clicked.connect(self.send)
+
+        self.btnConn=QPushButton("Connect",self)
+        self.btnConn.resize(350,30)
+        self.btnConnFont=self.btnConn.font()
+        self.btnConnFont.setPointSize(12)
+        self.btnConn.setFont(self.btnConnFont)
+        self.btnConn.move(10,360)
+        self.btnConn.setStyleSheet("{background-color: #000080, color: silver;}")
+        self.btnConn.clicked.connect(self.send)
 
         self.chatBody=QVBoxLayout(self)
         # self.chatBody.addWidget(self.chatTextField)
@@ -40,12 +49,17 @@ class Window(QDialog):
         splitter.addWidget(self.chatTextField)
         splitter.setSizes([400,100])
 
-        splitter2=QSplitter(QtCore.Qt.Vertical)
-        splitter2.addWidget(splitter)
+        splitter2=QSplitter(QtCore.Qt.Horizontal)
         splitter2.addWidget(self.btnSend)
-        splitter2.setSizes([200,10])
+        splitter2.addWidget(self.btnConn)
+        splitter2.setSizes([50, 50])
 
-        self.chatBody.addWidget(splitter2)
+        splitter3=QSplitter(QtCore.Qt.Vertical)
+        splitter3.addWidget(splitter)
+        splitter3.addWidget(splitter2)
+        splitter3.setSizes([200,10])
+
+        self.chatBody.addWidget(splitter3)
 
 
         self.setWindowTitle("Slac chat")
