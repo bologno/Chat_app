@@ -1,29 +1,24 @@
 import sys,time
-from PyQt5 import QtGui
 from PyQt5 import QtCore
 from PyQt5.QtWidgets import (
     QSplitter, QComboBox, QVBoxLayout, QDialog, QWidget, QPushButton,
     QApplication, QMainWindow,QAction,QMessageBox,QLabel,QTextEdit, QLineEdit,
     QHBoxLayout,
 )
-from PyQt5.QtCore import QCoreApplication
-from PyQt5.QtGui import *
-from PyQt5.QtWidgets import *
 from PyQt5.QtCore import *
 from socket import AF_INET, socket, SOCK_STREAM
-import argparse
 from threading import Thread
-from socketserver import ThreadingMixIn
 
 status='status'
 tcpClientA=None
+connection_state = False
 
 class Window(QDialog):
     def __init__(self):
         super().__init__()
         self.flag=0
         self.label = QLabel(status, self)
-        self.label.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+        #self.label.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
         self.label.setAlignment(Qt.AlignCenter)
         self.label.setStyleSheet("QLabel {color: blue;}")
         self.chatTextField=QLineEdit(self)
@@ -39,9 +34,9 @@ class Window(QDialog):
         self.btnSend.clicked.connect(self.send)
 
         self.cb = QComboBox()
-        self.cb.addItem("C")
-        self.cb.addItem("C++")
-        self.cb.addItems(["Java", "C#", "Python"])
+        self.cb.addItem("Flor")
+        self.cb.addItem("All")
+        self.cb.addItems(["Rick", "Caro", "John"])
         self.cb.currentIndexChanged.connect(self.combo_population)
 
         self.btnConn=QPushButton("Connect",self)
@@ -51,7 +46,7 @@ class Window(QDialog):
         self.btnConn.setFont(self.btnConnFont)
         self.btnConn.move(10,360)
         self.btnConn.setStyleSheet("{background-color: #000080, color: silver;}")
-        self.btnConn.clicked.connect(self.send)
+        self.btnConn.clicked.connect(self.connect)
 
         self.chatBody=QVBoxLayout(self)
         # self.chatBody.addWidget(self.chatTextField)
@@ -90,7 +85,12 @@ class Window(QDialog):
 
 
     def send(self):
-        text=self.chatTextField.text()
+        try:
+            text=self.chatTextField.text()
+            if not text:
+                QMessageBox.about(self, "Error", "Add a message to send")
+        except ValueError as e:
+            print(e)
         font=self.chat.font()
         font.setPointSize(13)
         self.chat.setFont(font)
@@ -98,6 +98,10 @@ class Window(QDialog):
         self.chat.append(textFormatted)
         tcpClientA.send(text.encode())
         self.chatTextField.setText("")
+
+    def connect(self):
+        clientThread=ClientThread(window)
+        clientThread.start()
 
 class ClientThread(Thread):
     def __init__(self,window):
@@ -122,7 +126,6 @@ class ClientThread(Thread):
 if __name__ == '__main__':
     app = QApplication(sys.argv)
     window = Window()
-    clientThread=ClientThread(window)
-    clientThread.start()
+
     window.exec()
     sys.exit(app.exec_())
