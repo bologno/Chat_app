@@ -17,46 +17,33 @@ class Window(QDialog):
     def __init__(self):
         super().__init__()
         self.flag=0
+
         self.label = QLabel(status, self)
-        #self.label.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
         self.label.setAlignment(Qt.AlignCenter)
         self.label.setStyleSheet("QLabel {color: blue;}")
+
         self.chatTextField=QLineEdit(self)
-        self.chatTextField.resize(350,100)
-        self.chatTextField.move(10,350)
+
         self.btnSend=QPushButton("Send",self)
-        self.btnSend.resize(350,30)
         self.btnSendFont=self.btnSend.font()
-        self.btnSendFont.setPointSize(12)
-        self.btnSend.setFont(self.btnSendFont)
-        self.btnSend.move(10,360)
         self.btnSend.setStyleSheet("{background-color: #000080, color: silver;}")
         self.btnSend.clicked.connect(self.send)
 
         self.cb = QComboBox()
         self.cb.addItem("Flor")
-        self.cb.addItem("All")
         self.cb.addItems(["Rick", "Caro", "John"])
         self.cb.currentIndexChanged.connect(self.combo_population)
 
         self.btnConn=QPushButton("Connect",self)
-        self.btnConn.resize(350,30)
         self.btnConnFont=self.btnConn.font()
-        self.btnConnFont.setPointSize(12)
-        self.btnConn.setFont(self.btnConnFont)
-        self.btnConn.move(10,360)
         self.btnConn.setStyleSheet("{background-color: #000080, color: silver;}")
         self.btnConn.clicked.connect(self.connect)
 
         self.chatBody=QVBoxLayout(self)
-        # self.chatBody.addWidget(self.chatTextField)
-        # self.chatBody.addWidget(self.btnSend)
-        # self.chatWidget.setLayout(self.chatBody)
-        splitter=QSplitter(QtCore.Qt.Vertical)
-
         self.chat = QTextEdit()
         self.chat.setReadOnly(True)
 
+        splitter=QSplitter(QtCore.Qt.Vertical)
         splitter.addWidget(self.chat)
         splitter.addWidget(self.chatTextField)
         splitter.setSizes([400,100])
@@ -75,8 +62,6 @@ class Window(QDialog):
         splitter3.setSizes([200,10])
 
         self.chatBody.addWidget(splitter3)
-
-
         self.setWindowTitle("Slac chat")
         self.resize(500, 500)
 
