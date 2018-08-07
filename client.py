@@ -22,11 +22,16 @@ class Window(QDialog):
         super().__init__()
         self.flag=0
         self.user = ""
+        self.status = "offline"
         self.getText()
 
         self.label = QLabel(self.user, self)
         self.label.setAlignment(Qt.AlignCenter)
         self.label.setStyleSheet("QLabel {color: blue;}")
+
+        self.status = QLabel(self.status, self)
+        self.status.setAlignment(Qt.AlignCenter)
+        self.status.setStyleSheet("QLabel {color: grey;}")
 
         self.btnSend = QPushButton("Send",self)
         self.btnSendFont=self.btnSend.font()
@@ -53,11 +58,15 @@ class Window(QDialog):
         splitter.addWidget(self.chatTextField)
         splitter.setSizes([400,100])
 
+        splitter1=QSplitter(QtCore.Qt.Vertical)
+        splitter1.addWidget(self.label)
+        splitter1.addWidget(self.status)
+
         splitter2=QSplitter(QtCore.Qt.Horizontal)
         splitter2.addWidget(self.cb)
         splitter2.addWidget(self.btnSend)
         splitter2.addWidget(self.btnConn)
-        splitter2.addWidget(self.label)
+        splitter2.addWidget(splitter1)
         splitter2.setSizes([30, 30, 30, 10])
 
         splitter3=QSplitter(QtCore.Qt.Vertical)
@@ -71,7 +80,7 @@ class Window(QDialog):
 
 
     def getText(self):
-        text, okPressed = QInputDialog.getText(self, "Get text","Your name:", QLineEdit.Normal, "")
+        text, okPressed = QInputDialog.getText(self, "Login","Your name:", QLineEdit.Normal, "")
         if okPressed and text != '':
             self.user = text
         else:
