@@ -3,15 +3,15 @@ from PyQt5 import QtCore
 from PyQt5.QtWidgets import (
     QSplitter, QComboBox, QVBoxLayout, QDialog, QWidget, QPushButton,
     QApplication, QMainWindow,QAction,QMessageBox,QLabel,QTextEdit, QLineEdit,
-    QHBoxLayout,
+    QHBoxLayout, QInputDialog
 )
 from PyQt5.QtCore import *
 from socket import AF_INET, socket, SOCK_STREAM
 from threading import Thread
 
-status='status'
+
 tcpClientA=None
-connection_state = False
+
 
 
 
@@ -21,31 +21,32 @@ class Window(QDialog):
     def __init__(self):
         super().__init__()
         self.flag=0
+        self.user = ""
+        self.getText()
 
-        self.label = QLabel(status, self)
+        self.label = QLabel(self.user, self)
         self.label.setAlignment(Qt.AlignCenter)
         self.label.setStyleSheet("QLabel {color: blue;}")
 
-        self.chatTextField=QLineEdit(self)
-
         self.btnSend = QPushButton("Send",self)
         self.btnSendFont=self.btnSend.font()
-        self.btnSend.setStyleSheet("{background-color: #000080, color: silver;}")
+        #self.btnSend.setStyleSheet("{background-color: #000080, color: silver;}")
         self.btnSend.clicked.connect(self.send)
+
+        self.btnConn = QPushButton("Connect",self)
+        self.btnConnFont=self.btnConn.font()
+        #self.btnConn.setStyleSheet("{background-color: #000080, color: silver;}")
+        self.btnConn.clicked.connect(self.connect)
 
         self.cb = QComboBox()
         self.cb.addItem("Flor")
         self.cb.addItems(["Rick", "Caro", "John"])
         self.cb.currentIndexChanged.connect(self.combo_population)
 
-        self.btnConn = QPushButton("Connect",self)
-        self.btnConnFont=self.btnConn.font()
-        self.btnConn.setStyleSheet("{background-color: #000080, color: silver;}")
-        self.btnConn.clicked.connect(self.connect)
-
         self.chatBody = QVBoxLayout(self)
         self.chat = QTextEdit()
         self.chat.setReadOnly(True)
+        self.chatTextField=QLineEdit(self)
 
         splitter=QSplitter(QtCore.Qt.Vertical)
         splitter.addWidget(self.chat)
@@ -67,6 +68,15 @@ class Window(QDialog):
         self.chatBody.addWidget(splitter3)
         self.setWindowTitle("Slac chat")
         self.resize(500, 500)
+
+
+    def getText(self):
+        text, okPressed = QInputDialog.getText(self, "Get text","Your name:", QLineEdit.Normal, "")
+        if okPressed and text != '':
+            self.user = text
+        else:
+            print("No valid user. system closed.")
+            sys.exit(app.exec_())
 
 
     def combo_population(self, index):
@@ -92,8 +102,6 @@ class Window(QDialog):
     def connect(self):
         clientThread=ClientThread(window)
         clientThread.start()
-
-
 
 
 
@@ -125,6 +133,5 @@ class ClientThread(Thread):
 if __name__ == '__main__':
     app = QApplication(sys.argv)
     window = Window()
-
     window.exec()
     sys.exit(app.exec_())
