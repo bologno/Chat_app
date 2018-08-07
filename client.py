@@ -13,7 +13,11 @@ status='status'
 tcpClientA=None
 connection_state = False
 
+
+
 class Window(QDialog):
+
+
     def __init__(self):
         super().__init__()
         self.flag=0
@@ -24,7 +28,7 @@ class Window(QDialog):
 
         self.chatTextField=QLineEdit(self)
 
-        self.btnSend=QPushButton("Send",self)
+        self.btnSend = QPushButton("Send",self)
         self.btnSendFont=self.btnSend.font()
         self.btnSend.setStyleSheet("{background-color: #000080, color: silver;}")
         self.btnSend.clicked.connect(self.send)
@@ -34,12 +38,12 @@ class Window(QDialog):
         self.cb.addItems(["Rick", "Caro", "John"])
         self.cb.currentIndexChanged.connect(self.combo_population)
 
-        self.btnConn=QPushButton("Connect",self)
+        self.btnConn = QPushButton("Connect",self)
         self.btnConnFont=self.btnConn.font()
         self.btnConn.setStyleSheet("{background-color: #000080, color: silver;}")
         self.btnConn.clicked.connect(self.connect)
 
-        self.chatBody=QVBoxLayout(self)
+        self.chatBody = QVBoxLayout(self)
         self.chat = QTextEdit()
         self.chat.setReadOnly(True)
 
@@ -55,7 +59,6 @@ class Window(QDialog):
         splitter2.addWidget(self.label)
         splitter2.setSizes([30, 30, 30, 10])
 
-
         splitter3=QSplitter(QtCore.Qt.Vertical)
         splitter3.addWidget(splitter)
         splitter3.addWidget(splitter2)
@@ -64,6 +67,7 @@ class Window(QDialog):
         self.chatBody.addWidget(splitter3)
         self.setWindowTitle("Slac chat")
         self.resize(500, 500)
+
 
     def combo_population(self, index):
         print(index)
@@ -84,14 +88,22 @@ class Window(QDialog):
         tcpClientA.send(text.encode())
         self.chatTextField.setText("")
 
+
     def connect(self):
         clientThread=ClientThread(window)
         clientThread.start()
 
+
+
+
+
 class ClientThread(Thread):
+
+
     def __init__(self,window):
         Thread.__init__(self)
         self.window=window
+
 
     def run(self):
        #host = socket.gethostname()
@@ -106,6 +118,8 @@ class ClientThread(Thread):
            data = tcpClientA.recv(BUFFER_SIZE)
            window.chat.append(data.decode("utf-8"))
        tcpClientA.close()
+
+
 
 
 if __name__ == '__main__':
