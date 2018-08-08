@@ -141,7 +141,7 @@ class ClientThread(Window, Thread):
             msg = self.tcpclient.recv(BUFFER_SIZE)
             msg = msg.decode()
             if msg.startswith('{CLIENTS}'):
-                clients = msg.split('}')[0]
+                clients = msg.split('}')[1]
                 clients = [user for user in clients.split('|')]
                 self.combo_population(clients)
                 continue
