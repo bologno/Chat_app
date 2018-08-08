@@ -1,29 +1,15 @@
 #!/usr/bin/env python3
-import sys, time
+
+import sys
 from PyQt5 import QtCore
 from PyQt5.QtWidgets import (
-    QSplitter,
-    QComboBox,
-    QVBoxLayout,
-    QDialog,
-    QWidget,
-    QPushButton,
-    QApplication,
-    QMainWindow,
-    QAction,
-    QMessageBox,
-    QLabel,
-    QTextEdit,
-    QLineEdit,
-    QHBoxLayout,
-    QInputDialog,
+    QSplitter, QComboBox, QVBoxLayout, QDialog, QWidget, QPushButton,
+    QApplication, QMainWindow, QAction, QMessageBox, QLabel, QTextEdit,
+    QLineEdit, QHBoxLayout, QInputDialog
 )
-from PyQt5.QtCore import *
+from PyQt5.QtCore import Qt
 from socket import AF_INET, socket, SOCK_STREAM
 from threading import Thread
-
-
-tcpClientA = None
 
 
 class Window(QDialog):
@@ -32,7 +18,6 @@ class Window(QDialog):
         self.flag = 0
         self.user = ""
         self.status = "offline"
-        self.login()
 
         self.label = QLabel(self.user, self)
         self.label.setAlignment(Qt.AlignCenter)
@@ -42,15 +27,15 @@ class Window(QDialog):
         self.status.setAlignment(Qt.AlignCenter)
         self.status.setStyleSheet("QLabel {color: grey;}")
 
-        self.btnSend = QPushButton("Send", self)
+        self.btnSend = QPushButton("Send",self)
         self.btnSendFont = self.btnSend.font()
         self.btnSend.clicked.connect(self.send)
 
-        self.btnConn = QPushButton("Connect", self)
+        self.btnConn = QPushButton("Connect",self)
         self.btnConnFont = self.btnConn.font()
         self.btnConn.clicked.connect(self.connect)
 
-        self.btnDisconn = QPushButton("Disconnect", self)
+        self.btnDisconn = QPushButton("Disconnect",self)
         self.btnDisonnFont = self.btnDisconn.font()
         self.btnDisconn.clicked.connect(self.disconnect)
 
@@ -83,14 +68,15 @@ class Window(QDialog):
         self.splitter3 = QSplitter(QtCore.Qt.Vertical)
         self.splitter3.addWidget(self.splitter)
         self.splitter3.addWidget(self.splitter2)
+        # splitter3.setSizes([200,10])
 
         self.chatBody.addWidget(self.splitter3)
         self.setWindowTitle("Slac chat")
         self.resize(500, 500)
 
     def login(self):
-        text, okPressed = QInputDialog.getText(self, "Login", "Your name:")
-        if okPressed and text != "":
+        text, okPressed = QInputDialog.getText(self, "Login", "Your name:",)
+        if okPressed and text != '':
             self.user = text
         else:
             print("No valid user. system closed.")
@@ -109,48 +95,65 @@ class Window(QDialog):
         font = self.chat.font()
         font.setPointSize(13)
         self.chat.setFont(font)
-        textFormatted = "{:>80}".format(text)
+        textFormatted = '{:>80}'.format(text)
         self.chat.append(textFormatted)
-        tcpClientA.send(text.encode())
         self.chatTextField.setText("")
+        return text
 
     def connect(self):
-        self.clientThread = ClientThread(window)
-        self.clientThread.start()
-        self.status.setText("Online")
+        self.status.setText('Online')
         self.splitter2.replaceWidget(2, self.btnDisconn)
-        tcpClientA.send("{REGISTER}" + str(self.user))
 
     def disconnect(self):
-        tcpClientA.close()
-        self.status.setText("Offline")
+        self.status.setText('Offline')
         self.splitter2.replaceWidget(2, self.btnConn)
 
 
-class ClientThread(Thread):
-    def __init__(self, window):
+class ClientThread(Window, Thread):
+    def __init__(self):
+        super().__init__()
         Thread.__init__(self)
-        self.window = window
+        self.login()
+        self.connect()
+
+    def connect(self):
+        host = "127.0.0.1"
+        port = 33002
+        self.tcpclient = socket(AF_INET, SOCK_STREAM)
+        self.tcpclient.connect((host, port))
+        cmd = '{REGISTER}' + str(self.user)
+        self.tcpclient.send(cmd.encode())
+        super().connect()
+        self.start()
+
+    def disconnect(self):
+        self.tcpclient.close()
+        super().disconnect()
+
+    def send(self):
+        text = super().send()
+        self.tcpclient.send(text.encode())
 
     def run(self):
         # host = socket.gethostname()
-        host = "127.0.0.1"
-        port = 33002
         BUFFER_SIZE = 2048
-        global tcpClientA
-        tcpClientA = socket(AF_INET, SOCK_STREAM)
-        tcpClientA.connect((host, port))
-
         while True:
-            data = tcpClientA.recv(BUFFER_SIZE)
-            window.chat.append(data.decode("utf-8"))
-        tcpClientA.close()
+            msg = self.tcpclient.recv(BUFFER_SIZE)
+            msg = msg.decode()
+            if msg.startswith('{CLIENTS}'):
+                clients = msg.split('}')[0]
+                clients = [user for user in clients.split('|')]
+                self.combo_population(clients)
+                continue
+
+            else:
+                window.chat.append(msg)
+
+        self.tcpclient.close()
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     app = QApplication(sys.argv)
-    window = Window()
+    window = ClientThread()
     window.exec()
-    x = app.exec_()
-    input()
-    sys.exit(x)
+    sys.exit(app.exec_())

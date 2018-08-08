@@ -1,9 +1,6 @@
-#!/usr/bin/env python3
-
 import argparse
 from socket import AF_INET, socket, SOCK_STREAM
 from threading import Thread
-import client
 
 
 def accept_incoming_connections():
@@ -29,16 +26,15 @@ def handle_client(client):  # Takes client socket as argument.
         if msg == "":
             msg = "{QUIT}"
 
-
+        # Avoid messages before registering
         if msg.startswith("{ALL}") and name:
             new_msg = msg.replace("{ALL}", "{MSG}"+prefix)
             send_message(new_msg, broadcast=True)
             continue
 
-
         if msg.startswith("{REGISTER}"):
             name = msg.split("}")[1]
-            welcome = '{MSG}Welcome %s!' % name
+            welcome = '{'+name+'}Welcome %s!' % name
             send_message(welcome, destination=client)
             msg = "{MSG}%s has joined the chat!" % name
             send_message(msg, broadcast=True)
@@ -46,7 +42,6 @@ def handle_client(client):  # Takes client socket as argument.
             prefix = name + ": "
             send_clients()
             continue
-
 
         if msg == "{QUIT}":
             client.close()
@@ -76,10 +71,8 @@ def handle_client(client):  # Takes client socket as argument.
             print("Error parsing the message: %s" % msg)
 
 
-
 def send_clients():
     send_message("{CLIENTS}" + get_clients_names(), broadcast=True)
-
 
 
 def get_clients_names(separator="|"):
@@ -134,7 +127,6 @@ stop_server = False
 
 SERVER = socket(AF_INET, SOCK_STREAM)
 SERVER.bind(ADDR)
-print(clients)
 
 if __name__ == "__main__":
     try:
