@@ -3,9 +3,21 @@
 import sys
 from PyQt5 import QtCore
 from PyQt5.QtWidgets import (
-    QSplitter, QComboBox, QVBoxLayout, QDialog, QWidget, QPushButton,
-    QApplication, QMainWindow, QAction, QMessageBox, QLabel, QTextEdit,
-    QLineEdit, QHBoxLayout, QInputDialog
+    QSplitter,
+    QComboBox,
+    QVBoxLayout,
+    QDialog,
+    QWidget,
+    QPushButton,
+    QApplication,
+    QMainWindow,
+    QAction,
+    QMessageBox,
+    QLabel,
+    QTextEdit,
+    QLineEdit,
+    QHBoxLayout,
+    QInputDialog,
 )
 from PyQt5.QtCore import Qt
 from socket import AF_INET, socket, SOCK_STREAM
@@ -27,27 +39,27 @@ class Window(QDialog):
         self.status.setAlignment(Qt.AlignCenter)
         self.status.setStyleSheet("QLabel {color: grey;}")
 
-        self.btnSend = QPushButton("Send",self)
+        self.btnSend = QPushButton("Send", self)
         self.btnSendFont = self.btnSend.font()
         self.btnSend.clicked.connect(self.send)
 
-        self.btnConn = QPushButton("Connect",self)
+        self.btnConn = QPushButton("Connect", self)
         self.btnConnFont = self.btnConn.font()
         self.btnConn.clicked.connect(self.connect)
 
-        self.btnDisconn = QPushButton("Disconnect",self)
+        self.btnDisconn = QPushButton("Disconnect", self)
         self.btnDisonnFont = self.btnDisconn.font()
         self.btnDisconn.clicked.connect(self.disconnect)
 
+        self.cbList = []
         self.cb = QComboBox()
-        self.cb.addItem("Flor")
-        self.cb.addItems(["Rick", "Caro", "John"])
-        self.cb.currentIndexChanged.connect(self.combo_population)
+        # self.cb.currentIndexChanged.connect(self.defineTarget)
 
         self.chatBody = QVBoxLayout(self)
         self.chat = QTextEdit()
         self.chat.setReadOnly(True)
         self.chatTextField = QLineEdit(self)
+        self.target = ""
 
         self.splitter = QSplitter(QtCore.Qt.Vertical)
         self.splitter.addWidget(self.chat)
@@ -75,15 +87,17 @@ class Window(QDialog):
         self.resize(500, 500)
 
     def login(self):
-        text, okPressed = QInputDialog.getText(self, "Login", "Your name:",)
-        if okPressed and text != '':
+        text, okPressed = QInputDialog.getText(self, "Login", "Your name:")
+        if okPressed and text != "":
             self.user = text
         else:
             print("No valid user. system closed.")
             sys.exit(app.exec_())
 
-    def combo_population(self, index):
-        print(index)
+    def combo_population(self, clients):
+        if clients:
+            for user in clients:
+                self.cb.addItem(user)
 
     def send(self):
         try:
@@ -95,18 +109,21 @@ class Window(QDialog):
         font = self.chat.font()
         font.setPointSize(13)
         self.chat.setFont(font)
-        textFormatted = '{:>80}'.format(text)
+        textFormatted = "{:>80}".format(text)
         self.chat.append(textFormatted)
         self.chatTextField.setText("")
         return text
 
     def connect(self):
-        self.status.setText('Online')
+        self.status.setText("Online")
         self.splitter2.replaceWidget(2, self.btnDisconn)
 
     def disconnect(self):
-        self.status.setText('Offline')
+        self.status.setText("Offline")
         self.splitter2.replaceWidget(2, self.btnConn)
+
+    def defineTarget(self):
+        pass
 
 
 class ClientThread(Window, Thread):
@@ -121,7 +138,7 @@ class ClientThread(Window, Thread):
         port = 33002
         self.tcpclient = socket(AF_INET, SOCK_STREAM)
         self.tcpclient.connect((host, port))
-        cmd = '{REGISTER}' + str(self.user)
+        cmd = "{REGISTER}" + str(self.user)
         self.tcpclient.send(cmd.encode())
         super().connect()
         self.start()
@@ -140,19 +157,19 @@ class ClientThread(Window, Thread):
         while True:
             msg = self.tcpclient.recv(BUFFER_SIZE)
             msg = msg.decode()
-            if msg.startswith('{CLIENTS}'):
-                clients = msg.split('}')[1]
-                clients = [user for user in clients.split('|')]
+            if msg.startswith("{CLIENTS}"):
+                clients = msg.split("}")[1]
+                clients = [user for user in clients.split("|")]
                 self.combo_population(clients)
                 continue
 
             else:
-                window.chat.append(msg)
+                window.chat.append(msg.split("}")[1])
 
         self.tcpclient.close()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     app = QApplication(sys.argv)
     window = ClientThread()
     window.exec()
