@@ -1,29 +1,38 @@
-import sys,time
+#!/usr/bin/env python3
+import sys, time
 from PyQt5 import QtCore
 from PyQt5.QtWidgets import (
-    QSplitter, QComboBox, QVBoxLayout, QDialog, QWidget, QPushButton,
-    QApplication, QMainWindow,QAction,QMessageBox,QLabel,QTextEdit, QLineEdit,
-    QHBoxLayout, QInputDialog
+    QSplitter,
+    QComboBox,
+    QVBoxLayout,
+    QDialog,
+    QWidget,
+    QPushButton,
+    QApplication,
+    QMainWindow,
+    QAction,
+    QMessageBox,
+    QLabel,
+    QTextEdit,
+    QLineEdit,
+    QHBoxLayout,
+    QInputDialog,
 )
 from PyQt5.QtCore import *
 from socket import AF_INET, socket, SOCK_STREAM
 from threading import Thread
 
 
-tcpClientA=None
-
-
+tcpClientA = None
 
 
 class Window(QDialog):
-
-
     def __init__(self):
         super().__init__()
-        self.flag=0
+        self.flag = 0
         self.user = ""
         self.status = "offline"
-        self.getText()
+        self.login()
 
         self.label = QLabel(self.user, self)
         self.label.setAlignment(Qt.AlignCenter)
@@ -33,15 +42,17 @@ class Window(QDialog):
         self.status.setAlignment(Qt.AlignCenter)
         self.status.setStyleSheet("QLabel {color: grey;}")
 
-        self.btnSend = QPushButton("Send",self)
-        self.btnSendFont=self.btnSend.font()
-        #self.btnSend.setStyleSheet("{background-color: #000080, color: silver;}")
+        self.btnSend = QPushButton("Send", self)
+        self.btnSendFont = self.btnSend.font()
         self.btnSend.clicked.connect(self.send)
 
-        self.btnConn = QPushButton("Connect",self)
-        self.btnConnFont=self.btnConn.font()
-        #self.btnConn.setStyleSheet("{background-color: #000080, color: silver;}")
+        self.btnConn = QPushButton("Connect", self)
+        self.btnConnFont = self.btnConn.font()
         self.btnConn.clicked.connect(self.connect)
+
+        self.btnDisconn = QPushButton("Disconnect", self)
+        self.btnDisonnFont = self.btnDisconn.font()
+        self.btnDisconn.clicked.connect(self.disconnect)
 
         self.cb = QComboBox()
         self.cb.addItem("Flor")
@@ -51,96 +62,95 @@ class Window(QDialog):
         self.chatBody = QVBoxLayout(self)
         self.chat = QTextEdit()
         self.chat.setReadOnly(True)
-        self.chatTextField=QLineEdit(self)
+        self.chatTextField = QLineEdit(self)
 
-        splitter=QSplitter(QtCore.Qt.Vertical)
-        splitter.addWidget(self.chat)
-        splitter.addWidget(self.chatTextField)
-        splitter.setSizes([400,100])
+        self.splitter = QSplitter(QtCore.Qt.Vertical)
+        self.splitter.addWidget(self.chat)
+        self.splitter.addWidget(self.chatTextField)
+        self.splitter.setSizes([400, 100])
 
-        splitter1=QSplitter(QtCore.Qt.Vertical)
-        splitter1.addWidget(self.label)
-        splitter1.addWidget(self.status)
+        self.splitter1 = QSplitter(QtCore.Qt.Vertical)
+        self.splitter1.addWidget(self.label)
+        self.splitter1.addWidget(self.status)
 
-        splitter2=QSplitter(QtCore.Qt.Horizontal)
-        splitter2.addWidget(self.cb)
-        splitter2.addWidget(self.btnSend)
-        splitter2.addWidget(self.btnConn)
-        splitter2.addWidget(splitter1)
-        splitter2.setSizes([30, 30, 30, 10])
+        self.splitter2 = QSplitter(QtCore.Qt.Horizontal)
+        self.splitter2.addWidget(self.cb)
+        self.splitter2.addWidget(self.btnSend)
+        self.splitter2.addWidget(self.btnConn)
+        self.splitter2.addWidget(self.splitter1)
+        self.splitter2.setSizes([30, 30, 30, 10])
 
-        splitter3=QSplitter(QtCore.Qt.Vertical)
-        splitter3.addWidget(splitter)
-        splitter3.addWidget(splitter2)
-        splitter3.setSizes([200,10])
+        self.splitter3 = QSplitter(QtCore.Qt.Vertical)
+        self.splitter3.addWidget(self.splitter)
+        self.splitter3.addWidget(self.splitter2)
 
-        self.chatBody.addWidget(splitter3)
+        self.chatBody.addWidget(self.splitter3)
         self.setWindowTitle("Slac chat")
         self.resize(500, 500)
 
-
-    def getText(self):
-        text, okPressed = QInputDialog.getText(self, "Login","Your name:", QLineEdit.Normal, "")
-        if okPressed and text != '':
+    def login(self):
+        text, okPressed = QInputDialog.getText(self, "Login", "Your name:")
+        if okPressed and text != "":
             self.user = text
         else:
             print("No valid user. system closed.")
             sys.exit(app.exec_())
 
-
     def combo_population(self, index):
         print(index)
 
-
     def send(self):
         try:
-            text=self.chatTextField.text()
+            text = self.chatTextField.text()
             if not text:
                 QMessageBox.about(self, "Error", "Add a message to send")
         except ValueError as e:
             print(e)
-        font=self.chat.font()
+        font = self.chat.font()
         font.setPointSize(13)
         self.chat.setFont(font)
-        textFormatted='{:>80}'.format(text)
+        textFormatted = "{:>80}".format(text)
         self.chat.append(textFormatted)
         tcpClientA.send(text.encode())
         self.chatTextField.setText("")
 
-
     def connect(self):
-        clientThread=ClientThread(window)
-        clientThread.start()
+        self.clientThread = ClientThread(window)
+        self.clientThread.start()
+        self.status.setText("Online")
+        self.splitter2.replaceWidget(2, self.btnDisconn)
+        tcpClientA.send("{REGISTER}" + str(self.user))
 
+    def disconnect(self):
+        tcpClientA.close()
+        self.status.setText("Offline")
+        self.splitter2.replaceWidget(2, self.btnConn)
 
 
 class ClientThread(Thread):
-
-
-    def __init__(self,window):
+    def __init__(self, window):
         Thread.__init__(self)
-        self.window=window
-
+        self.window = window
 
     def run(self):
-       #host = socket.gethostname()
-       host = "127.0.0.1"
-       port = 33002
-       BUFFER_SIZE = 2048
-       global tcpClientA
-       tcpClientA = socket(AF_INET, SOCK_STREAM)
-       tcpClientA.connect((host, port))
+        # host = socket.gethostname()
+        host = "127.0.0.1"
+        port = 33002
+        BUFFER_SIZE = 2048
+        global tcpClientA
+        tcpClientA = socket(AF_INET, SOCK_STREAM)
+        tcpClientA.connect((host, port))
 
-       while True:
-           data = tcpClientA.recv(BUFFER_SIZE)
-           window.chat.append(data.decode("utf-8"))
-       tcpClientA.close()
-
-
+        while True:
+            data = tcpClientA.recv(BUFFER_SIZE)
+            window.chat.append(data.decode("utf-8"))
+        tcpClientA.close()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     app = QApplication(sys.argv)
     window = Window()
     window.exec()
-    sys.exit(app.exec_())
+    x = app.exec_()
+    input()
+    sys.exit(x)
