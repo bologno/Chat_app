@@ -51,8 +51,11 @@ class Window(QDialog):
         self.btnDisonnFont = self.btnDisconn.font()
         self.btnDisconn.clicked.connect(self.disconnect)
 
-        self.cbList = []
+        #cbFlag makes sure that all client list is added once
+        #Then updated one at the time on new or left users.
+        self.cbFlag = True
         self.cb = QComboBox()
+        self.cb.addItem('ALL')
         # self.cb.currentIndexChanged.connect(self.defineTarget)
 
         self.chatBody = QVBoxLayout(self)
@@ -95,9 +98,9 @@ class Window(QDialog):
             sys.exit(app.exec_())
 
     def combo_population(self, clients):
-        if clients:
-            for user in clients:
-                self.cb.addItem(user)
+        if len(clients) > 0:
+            self.cb.addItems(clients)
+            self.cbFlag = False
 
     def send(self):
         try:
@@ -157,12 +160,20 @@ class ClientThread(Window, Thread):
         while True:
             msg = self.tcpclient.recv(BUFFER_SIZE)
             msg = msg.decode()
-            if msg.startswith("{CLIENTS}"):
+            if self.cbFlag and msg.startswith("{CLIENTS}"):
                 clients = msg.split("}")[1]
                 clients = [user for user in clients.split("|")]
+                clients.remove(self.user)
                 self.combo_population(clients)
                 continue
 
+            if not self.cbFlag and msg.startswith("{UPD}"):
+                msg = msg.split("}")[1]
+                client = msg.split()[0]
+                if 'left' in msg:
+                    self.cb.removeItem(client)
+                else:
+                    self.cb.addItem(client)
             else:
                 window.chat.append(msg.split("}")[1])
 

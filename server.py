@@ -28,15 +28,15 @@ def handle_client(client):  # Takes client socket as argument.
 
         # Avoid messages before registering
         if msg.startswith("{ALL}") and name:
-            new_msg = msg.replace("{ALL}", "{MSG}" + prefix)
+            new_msg = msg.replace("{ALL}", "{MSG}"+prefix)
             send_message(new_msg, broadcast=True)
             continue
 
         if msg.startswith("{REGISTER}"):
             name = msg.split("}")[1]
-            welcome = "{" + name + "}Welcome %s!" % name
+            welcome = '{'+name+'}Welcome %s!' % name
             send_message(welcome, destination=client)
-            msg = "{MSG}%s has joined the chat!" % name
+            msg = "{UPD}%s has joined the chat!" % name
             send_message(msg, broadcast=True)
             clients[client] = name
             prefix = name + ": "
@@ -50,7 +50,7 @@ def handle_client(client):  # Takes client socket as argument.
             except KeyError:
                 pass
             if name:
-                send_message("{MSG}%s has left the chat." % name, broadcast=True)
+                send_message("{UPD}%s has left the chat." % name, broadcast=True)
                 send_clients()
             break
 
@@ -61,7 +61,7 @@ def handle_client(client):  # Takes client socket as argument.
         # specific client...
         try:
             msg_params = msg.split("}")
-            dest_name = msg_params[0][1:]  # Remove the {
+            dest_name = msg_params[0][1:] # Remove the {
             dest_sock = find_client_socket(dest_name)
             if dest_sock:
                 send_message(msg_params[1], prefix=prefix, destination=dest_sock)
@@ -104,8 +104,16 @@ clients = {}
 addresses = {}
 
 parser = argparse.ArgumentParser(description="Chat Server")
-parser.add_argument("--host", help="Host IP", default="127.0.0.1")
-parser.add_argument("--port", help="Port Number", default=33002)
+parser.add_argument(
+    '--host',
+    help='Host IP',
+    default="127.0.0.1"
+)
+parser.add_argument(
+    '--port',
+    help='Port Number',
+    default=33002
+)
 
 server_args = parser.parse_args()
 
