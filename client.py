@@ -43,20 +43,15 @@ class Window(QDialog):
         self.btnSendFont = self.btnSend.font()
         self.btnSend.clicked.connect(self.send)
 
-        self.btnConn = QPushButton("Connect", self)
-        self.btnConnFont = self.btnConn.font()
-        self.btnConn.clicked.connect(self.connect)
-
-        self.btnDisconn = QPushButton("Disconnect", self)
-        self.btnDisonnFont = self.btnDisconn.font()
-        self.btnDisconn.clicked.connect(self.disconnect)
+        self.btnLink = QPushButton("Disconnect", self)
+        self.btnLinkFont = self.btnLink.font()
+        self.btnLink.clicked.connect(self.connect)
 
         #cbFlag makes sure that all client list is added once
         #Then updated one at the time on new or left users.
         self.cbFlag = True
         self.cb = QComboBox()
         self.cb.addItem('ALL')
-        # self.cb.currentIndexChanged.connect(self.defineTarget)
 
         self.chatBody = QVBoxLayout(self)
         self.chat = QTextEdit()
@@ -64,30 +59,19 @@ class Window(QDialog):
         self.chatTextField = QLineEdit(self)
         self.target = ""
 
-        self.splitter = QSplitter(QtCore.Qt.Vertical)
-        self.splitter.addWidget(self.chat)
-        self.splitter.addWidget(self.chatTextField)
-        self.splitter.setSizes([400, 100])
-
-        
-
-        # self.splitter1 = QSplitter(QtCore.Qt.Vertical)
-        # self.splitter1.addWidget(self.status)
-        # self.splitter1.addWidget(self.btnConn)
+        self.splitter1 = QSplitter(QtCore.Qt.Vertical)
+        self.splitter1.addWidget(self.chat)
+        self.splitter1.addWidget(self.chatTextField)
+        self.splitter1.addWidget(self.status)
 
         self.splitter2 = QSplitter(QtCore.Qt.Horizontal)
         self.splitter2.addWidget(self.cb)
         self.splitter2.addWidget(self.btnSend)
-        self.splitter2.addWidget(self.status)
-        #self.splitter2.addWidget(self.btnConn)
-        #self.splitter2.addWidget(self.label)
-        #self.splitter2.setSizes([30, 30, 30, 10])
+        self.splitter2.addWidget(self.btnLink)
 
         self.splitter3 = QSplitter(QtCore.Qt.Vertical)
-        self.splitter3.addWidget(self.splitter)
+        self.splitter3.addWidget(self.splitter1)
         self.splitter3.addWidget(self.splitter2)
-        self.splitter3.addWidget(self.btnConn)
-        #splitter3.setSizes([300,100])
 
         self.chatBody.addWidget(self.splitter3)
         self.resize(500, 500)
@@ -113,10 +97,6 @@ class Window(QDialog):
                 QMessageBox.about(self, "Error", "Add a message to send")
         except ValueError as e:
             print(e)
-        #font = self.chat.font()
-        #font.setPointSize(13)
-        #self.chat.setFont(font)
-        #textFormatted = "{:>80}".format(text)
         #message gets header from combobox
         header=self.cb.currentText()
         message = '{'+header+'}' + text
@@ -128,12 +108,10 @@ class Window(QDialog):
         return message
 
     def connect(self):
+        print('connect visited now')
         self.status.setText("Online")
-        self.splitter2.replaceWidget(2, self.btnDisconn)
+        self.splitter2.refresh()
 
-    def disconnect(self):
-        self.status.setText("Offline")
-        self.splitter2.replaceWidget(2, self.btnConn)
 
     def defineTarget(self):
         pass
@@ -147,6 +125,7 @@ class ClientThread(Window, Thread):
         self.connect()
 
     def connect(self):
+        print('connect visited then')
         host = "127.0.0.1"
         port = 33002
         self.tcpclient = socket(AF_INET, SOCK_STREAM)
@@ -162,7 +141,10 @@ class ClientThread(Window, Thread):
         super().disconnect()
 
     def send(self):
+        #Not bradcasted messages go with private message label into chat
         text = super().send()
+        if not text.startswith("{ALL}"):
+            window.chat.append(self.user+': (private) '+text.split("}")[1])
         self.tcpclient.send(text.encode())
 
     def run(self):
@@ -185,9 +167,7 @@ class ClientThread(Window, Thread):
                     self.cb.removeItem(client)
                 else:
                     self.cb.addItem(client)
-            #else:
-            #    print('msg')
-            #    print(msg)
+
             if msg.startswith("{CLIENTS}"):
                 pass
             elif len(msg.split('}')) > 1:
