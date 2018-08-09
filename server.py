@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 import argparse
 from socket import AF_INET, socket, SOCK_STREAM
 from threading import Thread
@@ -22,6 +24,7 @@ def handle_client(client):  # Takes client socket as argument.
 
         if not msg is None:
             msg = msg.decode("utf-8")
+            print("message: \""+msg+"\"")
 
         if msg == "":
             msg = "{QUIT}"
@@ -97,6 +100,10 @@ def send_message(msg, prefix="", destination=None, broadcast=False):
             sock.send(send_msg)
     else:
         if destination is not None:
+            print('send_msg')
+            print(send_msg)
+            #ADD particular message header
+            #
             destination.send(send_msg)
 
 

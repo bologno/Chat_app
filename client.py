@@ -109,13 +109,19 @@ class Window(QDialog):
                 QMessageBox.about(self, "Error", "Add a message to send")
         except ValueError as e:
             print(e)
-        font = self.chat.font()
-        font.setPointSize(13)
-        self.chat.setFont(font)
-        textFormatted = "{:>80}".format(text)
-        self.chat.append(textFormatted)
+        #font = self.chat.font()
+        #font.setPointSize(13)
+        #self.chat.setFont(font)
+        #textFormatted = "{:>80}".format(text)
+        #message gets header from combobox
+        header=self.cb.currentText()
+        message = '{'+header+'}' + text
+        print('message about to leave')
+        print(message)
+        #self.tcpclient.send(message.encode())
+        #self.chat.append(text)
         self.chatTextField.setText("")
-        return text
+        return message
 
     def connect(self):
         self.status.setText("Online")
@@ -147,6 +153,7 @@ class ClientThread(Window, Thread):
         self.start()
 
     def disconnect(self):
+        self.tcpclient.send('{QUIT}'.encode())
         self.tcpclient.close()
         super().disconnect()
 
@@ -174,10 +181,16 @@ class ClientThread(Window, Thread):
                     self.cb.removeItem(client)
                 else:
                     self.cb.addItem(client)
-            else:
-                window.chat.append(msg.split("}")[1])
+            #else:
+            #    print('msg')
+            #    print(msg)
 
-        self.tcpclient.close()
+            if len(msg.split('}')) > 1:
+                window.chat.append(msg.split("}")[1])
+            else:
+                window.chat.append(msg)
+
+        self.disconnect()
 
 
 if __name__ == "__main__":
