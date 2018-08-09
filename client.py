@@ -69,30 +69,34 @@ class Window(QDialog):
         self.splitter.addWidget(self.chatTextField)
         self.splitter.setSizes([400, 100])
 
-        self.splitter1 = QSplitter(QtCore.Qt.Vertical)
-        self.splitter1.addWidget(self.label)
-        self.splitter1.addWidget(self.status)
+        
+
+        # self.splitter1 = QSplitter(QtCore.Qt.Vertical)
+        # self.splitter1.addWidget(self.status)
+        # self.splitter1.addWidget(self.btnConn)
 
         self.splitter2 = QSplitter(QtCore.Qt.Horizontal)
         self.splitter2.addWidget(self.cb)
         self.splitter2.addWidget(self.btnSend)
-        self.splitter2.addWidget(self.btnConn)
-        self.splitter2.addWidget(self.splitter1)
-        self.splitter2.setSizes([30, 30, 30, 10])
+        self.splitter2.addWidget(self.status)
+        #self.splitter2.addWidget(self.btnConn)
+        #self.splitter2.addWidget(self.label)
+        #self.splitter2.setSizes([30, 30, 30, 10])
 
         self.splitter3 = QSplitter(QtCore.Qt.Vertical)
         self.splitter3.addWidget(self.splitter)
         self.splitter3.addWidget(self.splitter2)
-        # splitter3.setSizes([200,10])
+        self.splitter3.addWidget(self.btnConn)
+        #splitter3.setSizes([300,100])
 
         self.chatBody.addWidget(self.splitter3)
-        self.setWindowTitle("Slac chat")
         self.resize(500, 500)
 
     def login(self):
         text, okPressed = QInputDialog.getText(self, "Login", "Your name:")
         if okPressed and text != "":
             self.user = text
+            self.setWindowTitle("Slac chat. User : "+self.user)
         else:
             print("No valid user. system closed.")
             sys.exit(app.exec_())
@@ -184,8 +188,9 @@ class ClientThread(Window, Thread):
             #else:
             #    print('msg')
             #    print(msg)
-
-            if len(msg.split('}')) > 1:
+            if msg.startswith("{CLIENTS}"):
+                pass
+            elif len(msg.split('}')) > 1:
                 window.chat.append(msg.split("}")[1])
             else:
                 window.chat.append(msg)
