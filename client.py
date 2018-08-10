@@ -105,18 +105,20 @@ class Window(QDialog):
         return message
 
     def connect(self):
-        print('called from here')
         self.status.setText("Online")
         self.btnLink.setText("Disconnect")
         self.reg = True
         self.splitter2.refresh()
+        print('self.reg')
+        print(self.reg)
 
     def disconnect(self):
-        print('Entro a fachada disconnect change.')
         self.status.setText("Offline")
         self.btnLink.setText("Connect")
         self.reg = False
         self.splitter2.refresh()
+        print('self.reg')
+        print(self.reg)
 
 
     def defineTarget(self):
@@ -128,13 +130,11 @@ class ClientThread(Window, Thread):
         super().__init__()
         Thread.__init__(self)
         self.login()
-        print("connect called ")
         self.connect_socket()
 
 
     def connect_socket(self):
         if not self.reg:
-            print('called from there')
             host = "127.0.0.1"
             port = 33002
             self.tcpclient = socket(AF_INET, SOCK_STREAM)
@@ -149,10 +149,9 @@ class ClientThread(Window, Thread):
 
     def disconnect_socket(self):
         self.tcpclient.send(''.encode())
-        print("ingrese al disconnect.")
-        super().disconnect()
         self.tcpclient.close()
-        self.interrupt()
+        #self.interrupt()
+        super().disconnect()
 
     def send(self):
         #Not bradcasted messages go with private message label into chat
