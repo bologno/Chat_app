@@ -27,7 +27,8 @@ from threading import Thread
 class Window(QDialog):
     def __init__(self):
         super().__init__()
-        self.flag = 0
+        # Flags points if the connection is open for this user name
+        self.reg = False
         self.user = ""
         self.status = "offline"
 
@@ -45,10 +46,10 @@ class Window(QDialog):
 
         self.btnLink = QPushButton("Disconnect", self)
         self.btnLinkFont = self.btnLink.font()
-        self.btnLink.clicked.connect(self.connect)
+        self.btnLink.clicked.connect(self.connect_socket)
 
-        #cbFlag makes sure that all client list is added once
-        #Then updated one at the time on new or left users.
+        # cbFlag makes sure that all client list is added once
+        # Then updated one at the time on new or left users.
         self.cbFlag = True
         self.cb = QComboBox()
         self.cb.addItem('ALL')
@@ -80,7 +81,7 @@ class Window(QDialog):
         text, okPressed = QInputDialog.getText(self, "Login", "Your name:")
         if okPressed and text != "":
             self.user = text
-            self.setWindowTitle("Slac chat. User : "+self.user)
+            self.setWindowTitle("Slac chat. User: "+self.user)
         else:
             print("No valid user. system closed.")
             sys.exit(app.exec_())
@@ -97,19 +98,24 @@ class Window(QDialog):
                 QMessageBox.about(self, "Error", "Add a message to send")
         except ValueError as e:
             print(e)
-        #message gets header from combobox
+        # message gets header from combobox
         header=self.cb.currentText()
         message = '{'+header+'}' + text
-        print('message about to leave')
-        print(message)
-        #self.tcpclient.send(message.encode())
-        #self.chat.append(text)
         self.chatTextField.setText("")
         return message
 
     def connect(self):
-        print('connect visited now')
+        print('called from here')
         self.status.setText("Online")
+        self.btnLink.setText("Disconnect")
+        self.reg = True
+        self.splitter2.refresh()
+
+    def disconnect(self):
+        print('Entro a fachada disconnect change.')
+        self.status.setText("Offline")
+        self.btnLink.setText("Connect")
+        self.reg = False
         self.splitter2.refresh()
 
 
@@ -122,23 +128,31 @@ class ClientThread(Window, Thread):
         super().__init__()
         Thread.__init__(self)
         self.login()
-        self.connect()
+        print("connect called ")
+        self.connect_socket()
 
-    def connect(self):
-        print('connect visited then')
-        host = "127.0.0.1"
-        port = 33002
-        self.tcpclient = socket(AF_INET, SOCK_STREAM)
-        self.tcpclient.connect((host, port))
-        cmd = "{REGISTER}" + str(self.user)
-        self.tcpclient.send(cmd.encode())
-        super().connect()
-        self.start()
 
-    def disconnect(self):
-        self.tcpclient.send('{QUIT}'.encode())
-        self.tcpclient.close()
+    def connect_socket(self):
+        if not self.reg:
+            print('called from there')
+            host = "127.0.0.1"
+            port = 33002
+            self.tcpclient = socket(AF_INET, SOCK_STREAM)
+            self.tcpclient.connect((host, port))
+            cmd = "{REGISTER}" + str(self.user)
+            self.tcpclient.send(cmd.encode())
+            super().connect()
+            self.start()
+        else:
+            self.disconnect_socket()
+            #self.tcpclient.send("".encode())
+
+    def disconnect_socket(self):
+        self.tcpclient.send(''.encode())
+        print("ingrese al disconnect.")
         super().disconnect()
+        self.tcpclient.close()
+        self.interrupt()
 
     def send(self):
         #Not bradcasted messages go with private message label into chat
