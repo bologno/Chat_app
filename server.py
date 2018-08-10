@@ -27,6 +27,7 @@ def handle_client(client):  # Takes client socket as argument.
             print('message: "' + msg + '"')
 
         if msg == "":
+            print("About to kill user.")
             msg = "{QUIT}"
 
         # Avoid messages before registering
