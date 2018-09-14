@@ -20,14 +20,14 @@ def handle_client(client):  # Takes client socket as argument.
     prefix = ""
 
     while True:
+        # Buffer sometimes saves two messages in the same buffer variableself
+        # Specially when server sends hello message and the online users list.
         msg = client.recv(BUFSIZ)
+        msg = msg.decode()
+        #print('crude message "{}"'.format(msg))
 
-        if not msg is None:
-            msg = msg.decode("utf-8")
-            print('message: "' + msg + '"')
-
-        if msg == "":
-            print("About to kill user.")
+        if msg == " ":
+            print("About to kill user {}.".format(name))
             msg = "{QUIT}"
 
         # Avoid messages before registering
@@ -48,6 +48,10 @@ def handle_client(client):  # Takes client socket as argument.
             continue
 
         if msg == "{QUIT}":
+            print('saying goodbye.')
+            send_message('{OFF}Goodbye %s' % name, destination=client)
+            send_message("{UPD}%s has left the chat." % name, broadcast=True)
+            send_clients()
             client.close()
             try:
                 del clients[client]
@@ -69,7 +73,7 @@ def handle_client(client):  # Takes client socket as argument.
             dest_sock = find_client_socket(dest_name)
             if dest_sock:
                 send_message(
-                    " (private) " + msg_params[1], prefix=prefix, destination=dest_sock
+                    " ({}) ".format(name) + msg_params[1], prefix=prefix, destination=dest_sock
                 )
             else:
                 print("Invalid Destination. %s" % dest_name)
@@ -96,6 +100,7 @@ def find_client_socket(name):
 
 
 def send_message(msg, prefix="", destination=None, broadcast=False):
+    print('message about to leave {}'.format(msg))
     send_msg = bytes(prefix + msg, "utf-8")
     if broadcast:
         """Broadcasts a message to all the clients."""
@@ -103,8 +108,7 @@ def send_message(msg, prefix="", destination=None, broadcast=False):
             sock.send(send_msg)
     else:
         if destination is not None:
-            print("send_msg")
-            print(send_msg)
+            #print("send_msg {}".format(send_msg))
             # ADD particular message header
             #
             destination.send(send_msg)
