@@ -205,8 +205,11 @@ class ClientThread(Window, Thread):
         self.disconnect()
 
 
-if __name__ == "__main__":
+def run():
     app = QApplication(sys.argv)
     window = ClientThread()
     window.exec()
     sys.exit(app.exec_())
+
+if __name__ == "__main__":
+    run()
