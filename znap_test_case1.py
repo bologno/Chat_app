@@ -10,12 +10,12 @@ Automatable: Yes
 """
 
 import server
+
 # import client
 from threading import Thread
 import time
 import random
 from socket import AF_INET, socket, SOCK_STREAM
-
 
 
 def _server():
@@ -29,6 +29,7 @@ def _send_message(conn, msg):
     msg = "{}\n".format(msg)
     conn.send(msg.encode())
 
+
 def _client(user):
     host = "127.0.0.1"
     port = 33002
@@ -36,6 +37,7 @@ def _client(user):
     tcpclient.connect((host, port))
     _send_message(tcpclient, "{REGISTER} %s" % user)
     _send_message(tcpclient, "{ALL} hello")
+
 
 def main():
     # candidates = [client, server]
@@ -52,6 +54,7 @@ def main():
     chat_server.start()
 
     _client(user)
+
 
 if __name__ == "__main__":
     main()

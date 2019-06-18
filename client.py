@@ -53,7 +53,7 @@ class Window(QDialog):
         self.cbFlag = True
         self.cblist = []
         self.cb = QComboBox()
-        self.cb.addItem('ALL')
+        self.cb.addItem("ALL")
 
         self.chatBody = QVBoxLayout(self)
         self.chat = QTextEdit()
@@ -82,7 +82,7 @@ class Window(QDialog):
         text, okPressed = QInputDialog.getText(self, "Login", "Your name:")
         if okPressed and text != "":
             self.user = text
-            self.setWindowTitle("Slac chat. User: "+self.user)
+            self.setWindowTitle("Slac chat. User: " + self.user)
         else:
             print("No valid user. system closed.")
             sys.exit(app.exec_())
@@ -103,7 +103,7 @@ class Window(QDialog):
             print(e)
         # message gets header from combobox
         header = self.cb.currentText()
-        message = '{'+header+'}' + text
+        message = "{" + header + "}" + text
         self.chatTextField.setText("")
         return message
 
@@ -112,7 +112,7 @@ class Window(QDialog):
         self.btnLink.setText("Disconnect")
         self.reg = True
         self.splitter2.refresh()
-        print('self.reg when connect button')
+        print("self.reg when connect button")
         print(self.reg)
 
     def disconnect(self):
@@ -120,7 +120,7 @@ class Window(QDialog):
         self.btnLink.setText("Connect")
         self.reg = False
         self.splitter2.refresh()
-        print('self.reg when disconnect button')
+        print("self.reg when disconnect button")
         print(self.reg)
 
     def defineTarget(self):
@@ -150,7 +150,7 @@ class ClientThread(Window, Thread):
             # self.tcpclient.send("".encode())
 
     def disconnect_socket(self):
-        print('logging of. Empty msg sent to server')
+        print("logging of. Empty msg sent to server")
         self.tcpclient.send(" ".encode())
         # self.tcpclient.shutdown(1)
         # self.tcpclient.close()
@@ -161,7 +161,7 @@ class ClientThread(Window, Thread):
         # Not bradcasted messages go with private message label into chat
         text = super().send()
         if not text.startswith("{ALL}"):
-            window.chat.append(self.user+': (private) '+text.split("}")[1])
+            window.chat.append(self.user + ": (private) " + text.split("}")[1])
         self.tcpclient.send(text.encode())
 
     def run(self):
@@ -169,8 +169,8 @@ class ClientThread(Window, Thread):
         BUFFER_SIZE = 2048
         while True:
             msg = self.tcpclient.recv(BUFFER_SIZE)
-            msg = msg.decode('utf-8')
-            print('received from server ', msg)
+            msg = msg.decode("utf-8")
+            print("received from server ", msg)
             if self.cbFlag and msg.startswith("{CLIENTS}"):
                 clients = msg.split("}")[1]
                 clients = [user for user in clients.split("|")]
@@ -181,10 +181,10 @@ class ClientThread(Window, Thread):
             if not self.cbFlag and msg.startswith("{UPD}"):
                 msg = msg.split("}")[1]
                 client = msg.split()[0]
-                print('client {}'.format(client))
-                print('client type {}'.format(type(client)))
-                if 'left' in msg:
-                    self.cb.removeItem(self.cblist.index(client)+1)
+                print("client {}".format(client))
+                print("client type {}".format(type(client)))
+                if "left" in msg:
+                    self.cb.removeItem(self.cblist.index(client) + 1)
                     self.cblist.remove(client)
                 else:
                     self.cb.addItem(client)
@@ -192,7 +192,7 @@ class ClientThread(Window, Thread):
 
             if msg.startswith("{CLIENTS}"):
                 pass
-            elif len(msg.split('}')) > 1:
+            elif len(msg.split("}")) > 1:
                 window.chat.append(msg.split("}")[1])
                 if msg.startswith("{OFF}"):
                     print("Shook hands with server, about to logoff")
@@ -210,6 +210,7 @@ def run():
     window = ClientThread()
     window.exec()
     sys.exit(app.exec_())
+
 
 if __name__ == "__main__":
     run()

@@ -22,6 +22,7 @@ Alternatively, you can create only one QApplication and never destroy it.
 Every time you want to create a new PDF, do it in that thread.
 """
 
+
 class ChatServer(object):
 
     clients = {}
@@ -86,9 +87,11 @@ class ChatServer(object):
                     continue
 
                 if msg == "{QUIT}":
-                    print('saying goodbye.')
-                    self.send_message('{OFF}Goodbye %s' % name, destination=client)
-                    self.send_message("{UPD}%s has left the chat." % name, broadcast=True)
+                    print("saying goodbye.")
+                    self.send_message("{OFF}Goodbye %s" % name, destination=client)
+                    self.send_message(
+                        "{UPD}%s has left the chat." % name, broadcast=True
+                    )
                     self.send_clients()
                     client.close()
                     try:
@@ -96,7 +99,9 @@ class ChatServer(object):
                     except KeyError:
                         pass
                     if name:
-                        self.send_message("{UPD}%s has left the chat." % name, broadcast=True)
+                        self.send_message(
+                            "{UPD}%s has left the chat." % name, broadcast=True
+                        )
                         self.send_clients()
                     return
 
@@ -111,17 +116,17 @@ class ChatServer(object):
                     dest_sock = self.find_client_socket(dest_name)
                     if dest_sock:
                         self.send_message(
-                            " ({}) ".format(name) + msg_params[1], prefix=prefix, destination=dest_sock
+                            " ({}) ".format(name) + msg_params[1],
+                            prefix=prefix,
+                            destination=dest_sock,
                         )
                     else:
                         print("Invalid Destination. %s" % dest_name)
                 except:
                     print("Error parsing the message: %s" % msg)
 
-
     def send_clients(self):
         self.send_message("{CLIENTS}" + self.get_clients_names(), broadcast=True)
-
 
     def get_clients_names(self, separator="|"):
         names = []
@@ -129,16 +134,14 @@ class ChatServer(object):
             names.append(name)
         return separator.join(names)
 
-
     def find_client_socket(self, name):
         for cli_sock, cli_name in clients.items():
             if cli_name == name:
                 return cli_sock
         return None
 
-
     def send_message(self, msg, prefix="", destination=None, broadcast=False):
-        print('message about to leave {}'.format(msg))
+        print("message about to leave {}".format(msg))
         send_msg = bytes(prefix + msg, "utf-8")
         if broadcast:
             """Broadcasts a message to all the clients."""
@@ -146,10 +149,11 @@ class ChatServer(object):
                 sock.send(send_msg)
         else:
             if destination is not None:
-                #print("send_msg {}".format(send_msg))
+                # print("send_msg {}".format(send_msg))
                 # ADD particular message header
                 #
                 destination.send(send_msg)
+
 
 def run():
 
@@ -163,8 +167,6 @@ def run():
     server_args = parser.parse_args()
 
     server = ChatServer(server_args.host, server_args.port)
-
-
 
 
 if __name__ == "__main__":
