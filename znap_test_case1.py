@@ -17,51 +17,18 @@ import time
 import random
 from socket import AF_INET, socket, SOCK_STREAM
 import re
+import client_lite
 
 
-test_name = " Welcome message"
 
-def _server():
-    print("Setting up server")
-    while True:
-        print("Server running")
-        time.sleep(10)
-
-
-def _send_message(conn, msg):
-    msg = "{}\n".format(msg)
-    conn.send(msg.encode())
-
-
-def _client(user):
-    host = "127.0.0.1"
-    port = 33002
-    tcpclient = socket(AF_INET, SOCK_STREAM)
-    tcpclient.connect((host, port))
-
-    _send_message(tcpclient, "{REGISTER} %s" % user)
-    # print(tcpclient.recv(2048))
-    return check(tcpclient, "welcome")
-
-    #print("Goodbye message received in client side: " +str(check(tcpclient, "Bye")))
-    # _send_message(tcpclient, " ")
-
-
-def check(socket, pattern):
-    BUFFER_SIZE = 2048
-    # host = socket.gethostname()
-    while True:
-        msg = socket.recv(BUFFER_SIZE)
-        msg = msg.decode("utf-8")
-        print("CLIENT "+ msg)
-        return re.search(pattern, msg.lower())
 
 
 def main():
-    user = "Pedro"
+    user = input("Enter client name")
     chat_server = Thread(target=server.run)
     chat_server.start()
-    return _client(user)
+    time.sleep(1)
+    print("{} test positive result: ", client_lite.run("welcome"))
 
 
 if __name__ == "__main__":
