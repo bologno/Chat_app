@@ -25,26 +25,28 @@ Every time you want to create a new PDF, do it in that thread.
 
 class ChatServer(object):
 
-    clients = {}
-    bufsize = 2048
 
     def __init__(self, host, port):
         self.socket = socket(AF_INET, SOCK_STREAM)
         self.socket.bind((host, port))
+        self.clients = {}
+        self.bufsize = 2048
+        self.counter = 1
 
         try:
             self.socket.listen(5)
+            #self.socket.settimeout(0.5)
             print("Server Started at {}:{}".format(host, port))
             print("Waiting for connection...")
-            ACCEPT_THREAD = Thread(target=self.run)
+            ACCEPT_THREAD = Thread(target=self.fire)
             ACCEPT_THREAD.start()
             ACCEPT_THREAD.join()
             self.socket.close()
         except KeyboardInterrupt:
-            print("Closing...")
+            print('Interrupted')
             ACCEPT_THREAD.interrupt()
 
-    def run(self):
+    def fire(self):
         """Sets up handling for incoming clients."""
         while True:
             client, client_address = self.socket.accept()
@@ -63,67 +65,54 @@ class ChatServer(object):
             # Specially when server sends hello message and the online users list.
             msgs = client.recv(self.bufsize).decode()
 
-            for msg in msgs.strip().split("\n"):
-                print("msg=%s" % msg)
-                if msg == " ":
-                    print("About to kill user {}.".format(name))
-                    msg = "{QUIT}"
+            # print("new message arrived {}".format(msgs))
+            if not msgs or msgs == " ":
+                print("About to unplug {}.".format(name))
+                break
+            else:
 
-                # Avoid messages before registering
-                if msg.startswith("{ALL}") and name:
-                    new_msg = msg.replace("{ALL}", "{MSG}" + prefix)
-                    self.send_message(new_msg, broadcast=True)
-                    continue
+                for msg in msgs.strip().split("\n"):
+                    print("msg=%s" % msg)
+                    if msg == " ":
+                        print("About to kill user {}.".format(name))
+                        msg = "{QUIT}"
 
-                if msg.startswith("{REGISTER}"):
-                    name = msg.split("}")[1].strip()
-                    welcome = "{%s}Welcome %s!" % (name, name)
-                    self.send_message(welcome, destination=client)
-                    msg = "{UPD}%s has joined the chat!" % name
-                    self.send_message(msg, broadcast=True)
-                    self.clients[client] = name
-                    prefix = name + ": "
-                    self.send_clients()
-                    continue
+                    # Avoid messages before registering
+                    if msg.startswith("{ALL}") and name:
+                        new_msg = msg.replace("{ALL}", "{MSG}" + prefix)
+                        self.send_message(new_msg, broadcast=True)
+                        continue
 
-                if msg == "{QUIT}":
-                    print("saying goodbye.")
-                    self.send_message("{OFF}Goodbye %s" % name, destination=client)
-                    self.send_message(
-                        "{UPD}%s has left the chat." % name, broadcast=True
-                    )
-                    self.send_clients()
-                    client.close()
-                    try:
-                        del self.clients[client]
-                    except KeyError:
-                        pass
-                    if name:
-                        self.send_message(
-                            "{UPD}%s has left the chat." % name, broadcast=True
-                        )
+                    if msg.startswith("{REGISTER}"):
+                        name = msg.split("}")[1].strip()
+                        welcome = "{%s}Welcome %s!" % (name, name)
+                        self.send_message(welcome, destination=client)
+                        msg = "{UPD}%s has joined the chat!" % name
+                        self.send_message(msg, broadcast=True)
+                        self.clients[client] = name
+                        prefix = name + ": "
                         self.send_clients()
-                    return
+                        continue
 
-                # Avoid messages before registering
-                if not name:
-                    continue
-                # We got until this point, it is either an unknown message or for an
-                # specific client...
-                try:
-                    msg_params = msg.split("}")
-                    dest_name = msg_params[0][1:]  # Remove the {
-                    dest_sock = self.find_client_socket(dest_name)
-                    if dest_sock:
-                        self.send_message(
-                            " ({}) ".format(name) + msg_params[1],
-                            prefix=prefix,
-                            destination=dest_sock,
-                        )
-                    else:
-                        print("Invalid Destination. %s" % dest_name)
-                except:
-                    print("Error parsing the message: %s" % msg)
+                    if msg == "{QUIT}":
+                        # print("saying goodbye.")
+                        self.send_message("{OFF}Goodbye %s" % name, destination=client)
+                        # self.send_message(
+                        #     "{UPD}%s has left the chat." % name, broadcast=True
+                        # )
+                        # self.send_clients()
+                        client.close()
+                        try:
+                            del self.clients[client]
+                        except KeyError:
+                            pass
+                        if name:
+                            self.send_message(
+                                "{UPD}%s has left the chat." % name, broadcast=True
+                            )
+                            self.send_clients()
+                        return
+
 
     def send_clients(self):
         self.send_message("{CLIENTS}" + self.get_clients_names(), broadcast=True)
@@ -141,20 +130,21 @@ class ChatServer(object):
         return None
 
     def send_message(self, msg, prefix="", destination=None, broadcast=False):
-        print("message about to leave {}".format(msg))
+        print("message about depart {}".format(msg))
         send_msg = bytes(prefix + msg, "utf-8")
-        if broadcast:
-            """Broadcasts a message to all the clients."""
-            for sock in self.clients:
-                sock.send(send_msg)
-        else:
-            if destination is not None:
-                # print("send_msg {}".format(send_msg))
+        self.counter -= 1
+        #if broadcast:
+        #     for sock in self.clients:
+        #         """Broadcasts a message to all the clients."""
+        #         sock.send(send_msg)
+        #else:
+        if destination:
                 # ADD particular message header
                 #
+            try:
                 destination.send(send_msg)
-
-
+            except:
+                raise IOError("destination error")
 def run():
 
     clients = {}
