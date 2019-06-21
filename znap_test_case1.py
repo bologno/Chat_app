@@ -24,11 +24,10 @@ import client_lite
 
 
 def main():
-    user = input("Enter client name")
     chat_server = Thread(target=server.run)
     chat_server.start()
     time.sleep(1)
-    print("{} test positive result: ", client_lite.run("welcome"))
+    print("{} test positive result: {}".format("welcome", client_lite.run("welcome")))
 
 
 if __name__ == "__main__":

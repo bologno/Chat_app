@@ -20,7 +20,10 @@ def run(message_key):
     tcpclient = socket(AF_INET, SOCK_STREAM)
     tcpclient.connect((host, port))
     exec(messages_test[message_key])
-    return check(tcpclient, message_key)
+    if check(tcpclient, message_key):
+        return True
+    else:
+        return False
     # pick your message_test Key to execute desired test. ecex(messages_test["example"])
 
 def check(socket, pattern):

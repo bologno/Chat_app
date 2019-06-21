@@ -9,7 +9,6 @@ Actual result:
 Automatable: Yes
 """
 
-
 import unittest
 import server
 from threading import Thread
@@ -24,11 +23,10 @@ import client_lite
 
 
 def main():
-    user = input("Enter client name")
     chat_server = Thread(target=server.run)
     chat_server.start()
     time.sleep(1)
-    print("{} test positive result: ", client_lite.run("goodbye"))
+    print("{} test positive result: {}".format("goodbye", client_lite.run("goodbye")))
 
 
 if __name__ == "__main__":
