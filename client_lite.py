@@ -13,11 +13,11 @@ def _send_message(conn, msg):
     conn.send(msg.encode())
 
 
-def run(message_key):
+def run(message_key, user):
     assert message_key in messages_test, "Bad test validation message identifier."
     host = "127.0.0.1"
     port = 33002
-    user = input("Enter client name: ")
+    # user = input("Enter client name: ")
     tcpclient = socket(AF_INET, SOCK_STREAM)
     tcpclient.connect((host, port))
     exec(messages_test[message_key])
