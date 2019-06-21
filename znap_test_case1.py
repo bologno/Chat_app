@@ -1,4 +1,3 @@
-
 """
 Test Case #1:
 Title: Welcome message to User.
@@ -18,9 +17,6 @@ import random
 from socket import AF_INET, socket, SOCK_STREAM
 import re
 import client_lite
-
-
-
 
 
 def main():

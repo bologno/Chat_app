@@ -24,8 +24,6 @@ Every time you want to create a new PDF, do it in that thread.
 
 
 class ChatServer(object):
-
-
     def __init__(self, host, port):
         self.socket = socket(AF_INET, SOCK_STREAM)
         self.socket.bind((host, port))
@@ -35,7 +33,7 @@ class ChatServer(object):
 
         try:
             self.socket.listen(5)
-            #self.socket.settimeout(0.5)
+            # self.socket.settimeout(0.5)
             print("Server Started at {}:{}".format(host, port))
             print("Waiting for connection...")
             ACCEPT_THREAD = Thread(target=self.fire)
@@ -43,7 +41,7 @@ class ChatServer(object):
             ACCEPT_THREAD.join()
             self.socket.close()
         except KeyboardInterrupt:
-            print('Interrupted')
+            print("Interrupted")
             ACCEPT_THREAD.interrupt()
 
     def fire(self):
@@ -113,7 +111,6 @@ class ChatServer(object):
                             self.send_clients()
                         return
 
-
     def send_clients(self):
         self.send_message("{CLIENTS}" + self.get_clients_names(), broadcast=True)
 
@@ -133,18 +130,20 @@ class ChatServer(object):
         print("message about depart {}".format(msg))
         send_msg = bytes(prefix + msg, "utf-8")
         self.counter -= 1
-        #if broadcast:
+        # if broadcast:
         #     for sock in self.clients:
         #         """Broadcasts a message to all the clients."""
         #         sock.send(send_msg)
-        #else:
+        # else:
         if destination:
-                # ADD particular message header
-                #
+            # ADD particular message header
+            #
             try:
                 destination.send(send_msg)
             except:
                 raise IOError("destination error")
+
+
 def run():
 
     clients = {}

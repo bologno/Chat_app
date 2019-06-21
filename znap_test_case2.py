@@ -19,9 +19,6 @@ import re
 import client_lite
 
 
-
-
-
 def main():
     chat_server = Thread(target=server.run)
     chat_server.start()

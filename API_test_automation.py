@@ -8,7 +8,6 @@ import time
 import gc
 
 
-
 tests = [znap_test_case1, znap_test_case2]
 
 trials = len(tests)

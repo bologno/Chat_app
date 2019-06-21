@@ -2,9 +2,10 @@ from socket import AF_INET, socket, SOCK_STREAM
 import re
 
 
-messages_test = {"welcome": '_send_message(tcpclient, "{REGISTER} %s" % user)',
-                    "goodbye": '_send_message(tcpclient, "{QUIT}")'
-                }
+messages_test = {
+    "welcome": '_send_message(tcpclient, "{REGISTER} %s" % user)',
+    "goodbye": '_send_message(tcpclient, "{QUIT}")',
+}
 
 
 def _send_message(conn, msg):
@@ -26,14 +27,16 @@ def run(message_key):
         return False
     # pick your message_test Key to execute desired test. ecex(messages_test["example"])
 
+
 def check(socket, pattern):
     BUFFER_SIZE = 2048
     # host = socket.gethostname()
     while True:
         msg = socket.recv(BUFFER_SIZE)
         msg = msg.decode("utf-8")
-        print("CLIENT "+ msg)
+        print("CLIENT " + msg)
         return re.search(pattern, msg.lower())
+
 
 if __name__ == "__main__":
     run()
