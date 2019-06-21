@@ -3,6 +3,7 @@
 import argparse
 from socket import AF_INET, socket, SOCK_STREAM
 from threading import Thread
+import time
 
 """
 Here's how it works. Qt marks the thread which creates the first QApplication
@@ -50,6 +51,7 @@ class ChatServer(object):
             client, client_address = self.socket.accept()
             print("%s:%s has connected." % client_address)
             # addresses[client] = client_address
+            client.settimeout(5)
             client_thread = Thread(target=self.handle_client, args=(client,))
             client_thread.start()
 
